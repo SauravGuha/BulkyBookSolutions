@@ -1,0 +1,47 @@
+﻿@model ManageUserRoleViewModel
+
+<div class="row pb-3">
+
+    <form method="post" asp-action="UpdateUserRole" enctype="multipart/form-data">
+
+        <input type="hidden" asp-for="@Model.UserRoleId" />
+
+        <table class="table tabel-bordered table-striped text-center" width="100%">
+
+            <thead>
+                <tr class="text-nowrap">
+                    <th>Role Name</th>
+                    <th>Role Assigned</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @for (int i = 0; i < Model.Roles.Count(); i++)
+                {
+                    <tr>
+                        <td>
+                            <input asp-for="@Model.Roles[i].RoleName" type="hidden" />
+                            @Model.Roles[i].RoleName
+                        </td>
+                        <td>
+                            <div class="form-check m-1">
+                                <input asp-for="@Model.Roles[i].IsAssigned" class="form-check-input" />
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+        <div class="row p-3">
+            <button type="submit" class="btn btn-primary col-6">
+                Update
+            </button>
+
+            <a class="btn btn-primary col-6" asp-action="Index">Back</a>
+        </div>
+
+    </form>
+
+</div>

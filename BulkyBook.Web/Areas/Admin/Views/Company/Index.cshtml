@@ -1,0 +1,90 @@
+﻿@model IEnumerable<Company>
+
+<div class="container p-3">
+
+    <div class="row">
+        <div class="col-6 me-auto">
+            <a class="btn btn-primary" asp-controller="Company" asp-action="CreateEdit">Create Company</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <table class="table tabel-bordered table-striped text-center" width="100%">
+
+            <thead>
+                <tr class="text-nowrap">
+                    <th>Company Name</th>
+                    <th>Street Address</th>
+                    <th>City</th>
+                    <th>Post Code</th>
+                    <th>State</th>
+                    <th>Phone Number</th>
+                    <th>Country</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var category in Model)
+                {
+                    <tr>
+                        <td>@category.Name</td>
+                        <td>@category.StreetAddress</td>
+                        <td>@category.City</td>
+                        <td>@category.PostalCode</td>
+                        <td>@category.State</td>
+                        <td>@category.PhoneNumber</td>
+                        <td>@category.Country</td>
+                        <td>
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                               aria-haspopup="true" aria-expanded="false">Actions</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item align-items-center" asp-controller="Company" asp-action="CreateEdit" asp-route-id="@category.Id">
+                                        Edit
+                                        <i class="bi bi-pen-fill"></i>
+                                    </a>
+                                    <a class="dropdown-item align-items-center" asp-controller="Company" asp-action="Delete" asp-route-id="@category.Id">
+                                        Delete
+                                        <i class="bi bi-trash2-fill"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+@section Scripts{
+    @{
+    <partial name="_toaster" />
+    }
+<script type="text/javascript">
+    var deleteAnchors = document.getElementsByClassName("btn-secondary");
+
+    for(var i=0;i<deleteAnchors.length;i++)    {
+        var deleteAnchor = deleteAnchors[i];
+            deleteAnchor.addEventListener('click',(e)=>{
+        //Assuming No is clicked.
+        e.preventDefault();
+        swal({
+            icon:"warning",
+            title:"Delete Category",
+            text:"This will delete the category permanently!",
+            buttons:true
+        }).then(e=>{
+            if(e){
+                location.href = deleteAnchor.href;
+            }
+        });
+    });
+    }
+</script>
+}
+

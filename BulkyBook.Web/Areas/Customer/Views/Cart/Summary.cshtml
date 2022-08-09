@@ -1,0 +1,147 @@
+﻿@model OrderSummaryViewModel;
+@inject IOptions<BulkyBook.Common.Common.StripeSettings> StripeSettings
+
+<form method="post" asp-action="OrderPost">
+    <input type="hidden" asp-for="@Model.UserId" />
+    <br />
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header bg-dark text-light ml-0">
+                <div class=" row container">
+                    <div class="col-6">
+                        <i class="fa fa-shopping-cart"></i> &nbsp;
+                        Order Summary
+                    </div>
+                    <div class="col-6 text-end">
+                        <a class="btn btn-outline-info btn-sm" asp-action="Index">Back to Cart</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="container rounded p-2">
+                    <div class="row">
+                        <div class="col-12 col-lg-6 pb-4">
+                            <select id="addresses" asp-for="@Model.AddressId" asp-items="@Model.SelectAddressItem" class="form-class">
+                                <option selected disabled>---Choose address---</option>
+                            </select>
+
+@*                            <div id="address">
+                                <div class="row">
+                                    <h4 class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="text-info">Shipping Details:</span>
+                                    </h4>
+                                </div>
+                                <div class="row my-1">
+                                    <div class="col-3">
+                                        <label>Name</label>
+                                    </div>
+                                    <div class="col-9">
+                                        <input class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="row my-1">
+                                    <div class="col-3">
+                                        <label>Phone</label>
+                                    </div>
+                                    <div class="col-9">
+                                        <input class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="row my-1">
+                                    <div class="col-3">
+                                        <label>Street Address</label>
+                                    </div>
+                                    <div class="col-9">
+                                        <input class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="row my-1">
+                                    <div class="col-3">
+                                        <label>City</label>
+                                    </div>
+                                    <div class="col-9">
+                                        <input class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="row my-1">
+                                    <div class="col-3">
+                                        <label>State</label>
+                                    </div>
+                                    <div class="col-9">
+                                        <input class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="row my-1">
+                                    <div class="col-3">
+                                        <label>Postal Code</label>
+                                    </div>
+                                    <div class="col-9">
+                                        <input class="form-control" />
+                                    </div>
+                                </div>
+                            </div>*@
+                        </div>
+
+                        <div class="col-12 col-lg-5 offset-lg-1">
+                            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-info">Order Summary:</span>
+                            </h4>
+                            <ul class="list-group mb-3">
+
+                                @for (int i = 0; i < @Model.ShoppingCartViewModel.ShoppingCarts.Count; i++)
+                                {
+                                    <input type="hidden" asp-for="@Model.ShoppingCartViewModel.ShoppingCarts[i].Id" />
+                                    <input type="hidden" asp-for="@Model.ShoppingCartViewModel.ShoppingCarts[i].Count" />
+                                    <input type="hidden" asp-for="@Model.ShoppingCartViewModel.ShoppingCarts[i].Price" />
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="my-0">@Model.ShoppingCartViewModel.ShoppingCarts[i].Product.Title</h6>
+                                            <small class="text-muted">Quantity: @Model.ShoppingCartViewModel.ShoppingCarts[i].Count</small>
+                                        </div>
+                                        <span class="text-muted">@Model.ShoppingCartViewModel.ShoppingCarts[i].Price.ToString("c")</span>
+                                    </li>
+                                }
+
+                                <li class="list-group-item d-flex justify-content-between bg-light">
+                                    <input type="hidden" asp-for="@Model.OrderTotal"/>
+                                    <small class="text-info">Total (USD)</small>
+                                    <strong class="text-info">@Model.OrderTotal.ToString("c")</strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-12 col-md-8 pt-2">
+                        <input type="hidden" asp-for="@Model.ShippinDate" />
+                        <p style="color:maroon; font-size:14px;">Estimate Arrival Date: @Model.ShippinDate.ToString("o")</p>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <button id="submit" type="submit" value="Place Order" class="btn btn-primary form-control">Place Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+@section Scripts{
+<script type="text/javascript">
+        var submitButton = document.getElementById('submit');
+
+    submitButton.addEventListener('click',(e)=>{
+                var addresses= document.getElementById("addresses");
+        if(addresses.value != '' && addresses.value == "---Choose address---"){
+            swal({
+                title:"Address is mandatory!",
+                icon:"warning"
+            });
+            e.preventDefault();
+        }
+    });
+</script>
+}

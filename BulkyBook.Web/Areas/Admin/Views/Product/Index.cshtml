@@ -1,0 +1,98 @@
+﻿@model IEnumerable<Product>
+
+<div class="container p-3">
+    <div class="row">
+        <div class="col-6 me-auto">
+            <a class="btn btn-primary" asp-controller="Product" asp-action="CreateEdit">Create Product</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <table class="table tabel-bordered table-striped text-center" width="100%">
+
+            <thead>
+                <tr class="text-nowrap">
+                    <th>Book Name</th>
+                    <th>ISBN</th>
+                    <th>Book Author</th>
+                    <th>List Price</th>
+                    <th>Price</th>
+                    <th>Price50</th>
+                    <th>Price100</th>
+                    <th>Category</th>
+                    <th>Cover Type</th>
+                    <th>Created Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var product in Model)
+                {
+                    <tr>
+                        <td class="text-wrap">@product.Title</td>
+                        <td>@product.ISBN</td>
+                        <td>@product.Author</td>
+                        <td>@product.ListPrice</td>
+                        <td>@product.Price</td>
+                        <td>@product.Price50</td>
+                        <td>@product.Price100</td>
+                        <td>@product.Category.Name</td>
+                        <td>@product.CoverType.Name</td>
+                        <td>@product.CreatedDate</td>
+                        <td>
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                               aria-haspopup="true" aria-expanded="false">Actions</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item align-items-center" asp-controller="Product"
+                                   asp-action="CreateEdit" asp-route-id="@product.Id">
+                                        Edit
+                                        <i class="bi bi-pen-fill"></i>
+                                    </a>
+                                    <a class="dropdown-item align-items-center" asp-controller="Product"
+                                   asp-action="Delete" asp-route-id="@product.Id">
+                                        Delete
+                                        <i class="bi bi-trash2-fill"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+@section Scripts{
+    @{
+    <partial name="_toaster" />
+    }
+<script type="text/javascript">
+
+    var deleteAnchors = document.getElementsByClassName("btn-secondary");
+
+    for(var i =0;i<deleteAnchors.length;i++)    {
+        var deleteAnchor = deleteAnchors[i];
+
+        deleteAnchor.addEventListener("click",(e)=>{
+                 //Assuming No is clicked.
+                e.preventDefault();
+                swal({
+                    icon:"warning",
+                    title:"Delete Category",
+                    text:"This will delete the product permanently!",
+                    buttons:true
+                }).then(e=>{
+                    if(e){
+                        location.href = deleteAnchor.href;
+                    }
+                });
+        });
+    }
+
+</script>
+}

@@ -1,0 +1,67 @@
+﻿@model Company
+
+<div class="row pb-3">
+
+    <form method="post" asp-controller="Company" asp-action="AddUpdate">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="row p-3">
+            <span asp-validation-for="Name" class="text-danger"></span>
+            <label asp-for="Name"></label>
+            <input asp-for="Name" />
+        </div>
+        <div class="row p-3">
+            <span asp-validation-for="StreetAddress" class="text-danger"></span>
+            <label asp-for="StreetAddress"></label>
+            <input asp-for="StreetAddress" />
+        </div>
+        <div class="row p-3">
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            <label asp-for="PhoneNumber"></label>
+            <input asp-for="PhoneNumber" />
+        </div>
+        <div class="row p-3">
+            <span asp-validation-for="City" class="text-danger"></span>
+            <label asp-for="City"></label>
+            <input asp-for="City" />
+        </div>
+        <div class="row p-3">
+            <span asp-validation-for="PostalCode" class="text-danger"></span>
+            <label asp-for="PostalCode"></label>
+            <input asp-for="PostalCode" />
+        </div>
+        <div class="row p-3">
+            <span asp-validation-for="State" class="text-danger"></span>
+            <label asp-for="State"></label>
+            <input asp-for="State" />
+        </div>
+        <div class="row p-3">
+            <span asp-validation-for="Country" class="text-danger"></span>
+            <label asp-for="Country"></label>
+            <input asp-for="Country" />
+        </div>
+
+        <div class="row p-3">
+            <button type="submit" class="btn btn-primary col-6">
+                @if (Model.Id == 0)
+                {
+                    <text>Add</text>
+                }
+                else
+                {
+                    <text>Update</text>
+                }
+            </button>
+
+            <a class="btn btn-primary col-6" asp-action="Index">Back</a>
+        </div>
+
+    </form>
+
+</div>
+
+@section Scripts{
+    @{
+    <partial name="_ValidationScriptsPartial" />
+    }
+}

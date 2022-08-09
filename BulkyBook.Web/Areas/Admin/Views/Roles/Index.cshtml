@@ -1,0 +1,65 @@
+﻿@model IEnumerable<IdentityRole>
+
+<div class="container p-3">
+    <div class="row">
+        <div class="col-6 me-auto">
+            <a class="btn btn-primary" asp-controller="Roles" asp-action="CreateEdit">Create Roles</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <table class="table tabel-bordered table-striped text-center" width="100%">
+
+            <thead>
+                <tr class="text-nowrap">
+                    <th>Role Name</th>
+                    <th>Role Id</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var role in Model)
+                {
+                    <tr>
+                        <td>@role.Name</td>
+                        <td>@role.Id</td>
+                        <td>
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                               aria-haspopup="true" aria-expanded="false">Actions</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item align-items-center">
+                                        Edit
+                                        <i class="bi bi-pen-fill"></i>
+                                    </a>
+                                    <a class="dropdown-item align-items-center">
+                                        Delete
+                                        <i class="bi bi-trash2-fill"></i>
+                                    </a>
+                                    @if (role.Name != BulkyBook.Common.Constants.Roles.SuperAdmin.ToString())
+                                    {
+                                        <a class="dropdown-item align-items-center">
+                                            Manage Permissions
+                                            <i class="bi bi-kanban-fill"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+@section Scripts{
+    @{
+    <partial name="_toaster" />
+    }
+}
