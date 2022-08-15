@@ -42,5 +42,8 @@ namespace BulkyBook.Common.Models
         [MaxLength(1000)]
         [DisplayName("Phone Number")]
         public string PhoneNumber { get; set; }
+
+        [ValidateNever]
+        public virtual ICollection<Customer> Customers { get; set; }
     }
 }

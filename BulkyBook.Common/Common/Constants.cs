@@ -36,5 +36,12 @@
             paid,
             approvedfordelayedpayment
         }
+
+        public enum ApplicationArea
+        {
+            Admin,
+            Customer,
+            Identity
+        }
     }
 }

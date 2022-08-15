@@ -50,6 +50,18 @@ namespace BulkyBook.EntityFrameWorkDb
             return entity;
         }
 
+        public Task<List<T>> GetAllAsync(params string[] includeProperties)
+        {
+            var tProperties = typeof(T).GetProperties();
+            var entity = (IQueryable<T>)this._entity;
+            foreach (var property in includeProperties)
+            {
+                if (tProperties.Any(e => e.Name == property))
+                    entity = entity.Include(property);
+            }
+            return entity.ToListAsync();
+        }
+
         public T GetByExpression(Expression<Func<T, bool>> expression, params string[] includeProperties)
         {
             var tProperties = typeof(T).GetProperties();

@@ -51,5 +51,7 @@ namespace BulkyBook.Common.Models
 
         [Required]
         public int AddressId { get; set; }
+
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
     }
 }

@@ -96,6 +96,7 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
         public async Task<IActionResult> OrderPost(OrderSummaryViewModel orderSummaryViewModel)
         {
             var user = await this._userManager.FindByIdAsync(orderSummaryViewModel.UserId);
+
             var orderHeader = new OrderHeader()
             {
                 AddressId = orderSummaryViewModel.AddressId,
@@ -108,7 +109,6 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
                 PaymentDueDate = DateTime.UtcNow,
                 OrderStatus = OrderStatus.Pending.ToString()
             };
-
             this._unitOfWork.OrderHeaderRepository.Insert(orderHeader);
             this._unitOfWork.SaveChanges();
 
@@ -130,41 +130,55 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
             }
             this._unitOfWork.SaveChanges();
 
-            var domain = _configuration.GetRequiredSection("DomainName").Value;
-            var options = new SessionCreateOptions
+            if (user.CompanyId.GetValueOrDefault() == 0)
             {
-                PaymentMethodTypes = new List<string>
+                var domain = _configuration.GetRequiredSection("DomainName").Value;
+                var options = new SessionCreateOptions
+                {
+                    PaymentMethodTypes = new List<string>
                 { "card"
                 },
-                LineItems = orderSummaryViewModel.ShoppingCartViewModel.ShoppingCarts.Select(cart =>
-                {
-                    var shoppingCartDetails = this._unitOfWork.ShoppingCartRepository.GetByExpression(e => e.Id == cart.Id,
-                        nameof(ShoppingCart.Product));
-                    var pIfno = shoppingCartDetails.Product;
-                    return new SessionLineItemOptions()
+                    LineItems = orderSummaryViewModel.ShoppingCartViewModel.ShoppingCarts.Select(cart =>
                     {
-                        PriceData = new SessionLineItemPriceDataOptions()
+                        var shoppingCartDetails = this._unitOfWork.ShoppingCartRepository.GetByExpression(e => e.Id == cart.Id,
+                            nameof(ShoppingCart.Product));
+                        var pIfno = shoppingCartDetails.Product;
+                        return new SessionLineItemOptions()
                         {
-                            UnitAmountDecimal = Convert.ToDecimal(this.GetCartPrice(cart.Count, pIfno.Price,pIfno.Price50,pIfno.Price100) * 100),
-                            Currency="usd",
-                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            PriceData = new SessionLineItemPriceDataOptions()
                             {
-                                Name = shoppingCartDetails.Product.Title,
-                                 Description = shoppingCartDetails.Product.Description,
-                            }
-                        },
-                        Quantity = cart.Count
-                    };
-                }).ToList(),
-                Mode = "payment",
-                SuccessUrl = domain + $"/customer/cart/OrderConfirmation?id={orderHeader.Id}",
-                CancelUrl = domain + "/customer/cart/Index",
-            };
-            var service = new SessionService();
-            Session session = service.Create(options);
-            this._unitOfWork.OrderHeaderRepository.UpdateStripePaymentValues(orderHeader.Id, session.Id, session.PaymentIntentId);
-            Response.Headers.Add("Location", session.Url);
-            return new StatusCodeResult(303);
+                                UnitAmountDecimal = Convert.ToDecimal(this.GetCartPrice(cart.Count, pIfno.Price, pIfno.Price50, pIfno.Price100) * 100),
+                                Currency = "usd",
+                                ProductData = new SessionLineItemPriceDataProductDataOptions
+                                {
+                                    Name = shoppingCartDetails.Product.Title,
+                                    Description = shoppingCartDetails.Product.Description,
+                                }
+                            },
+                            Quantity = cart.Count
+                        };
+                    }).ToList(),
+                    Mode = "payment",
+                    SuccessUrl = domain + $"/customer/cart/OrderConfirmation?id={orderHeader.Id}",
+                    CancelUrl = domain + "/customer/cart/Index",
+                };
+                var service = new SessionService();
+                Session session = service.Create(options);
+                this._unitOfWork.OrderHeaderRepository.UpdateStripePaymentValues(orderHeader.Id, session.Id, session.PaymentIntentId);
+                Response.Headers.Add("Location", session.Url);
+                return new StatusCodeResult(303);
+            }
+            else
+            {
+                orderHeader.OrderStatus = OrderStatus.Approved.ToString();
+                orderHeader.PaymentStatus = PaymentStatus.approvedfordelayedpayment.ToString();
+                this._unitOfWork.OrderHeaderRepository.Update(orderHeader);
+                this._unitOfWork.SaveChanges();
+                this.DeleteShoppingCart(orderHeader);
+
+                TempData["OrderId"] = orderHeader.Id;
+                return RedirectToAction(nameof(OrderConfirmation), orderHeader.Id);
+            }
         }
 
         /// <summary>
@@ -175,22 +189,27 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
         public async Task<IActionResult> OrderConfirmation(int? id)
         {
             var orderHeader = this._unitOfWork.OrderHeaderRepository.Find(id);
-            if(orderHeader!=null)
+            if (orderHeader != null)
             {
                 var service = new SessionService();
                 var session = await service.GetAsync(orderHeader.SessionId);
-                if(session?.PaymentStatus == PaymentStatus.paid.ToString())
+                if (session?.PaymentStatus == PaymentStatus.paid.ToString())
                 {
-                    var shoppingCartItems = this._unitOfWork.ShoppingCartRepository.GetAll(e => e.UserId == orderHeader.UserId);
-                    foreach (var shoppingCartItem in shoppingCartItems)
-                        this._unitOfWork.ShoppingCartRepository.Delete(shoppingCartItem);
-                    this._unitOfWork.SaveChanges();
-
+                    this.DeleteShoppingCart(orderHeader);
                     this._unitOfWork.OrderHeaderRepository.UpdateOrderStatus(id, OrderStatus.Approved.ToString());
                     this._unitOfWork.OrderHeaderRepository.UpdateOrderPaymentStatus(id, PaymentStatus.approved.ToString());
                 }
+                TempData["OrderId"] = orderHeader.Id;
             }
-            return View(id);
+            return View();
+        }
+
+        private void DeleteShoppingCart(OrderHeader orderHeader)
+        {
+            var shoppingCartItems = this._unitOfWork.ShoppingCartRepository.GetAll(e => e.UserId == orderHeader.UserId);
+            foreach (var shoppingCartItem in shoppingCartItems)
+                this._unitOfWork.ShoppingCartRepository.Delete(shoppingCartItem);
+            this._unitOfWork.SaveChanges();
         }
 
         private double GetCartPrice(int quantity, double price, double price50, double price100)

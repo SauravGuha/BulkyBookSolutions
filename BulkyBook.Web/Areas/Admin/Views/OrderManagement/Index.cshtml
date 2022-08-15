@@ -1,0 +1,91 @@
+﻿@model IEnumerable<OrderViewModel>
+
+@{
+    var orderStatuses = ViewBag.OrderStatus;
+    var orderStatusParam = Context.Request.Query["orderStatus"];
+    var primaryText = "text-primary";
+    var activeText = "active text-white";
+}
+
+
+<div class="container p-3">
+
+    <div class="d-flex justify-content-between pt-4 ">
+
+        <div class="p-2">
+            <h2 class="text-primary">Order List</h2>
+        </div>
+        <div class="p-2">
+            <ul class="list-group list-group-horizontal-sm">
+                @foreach (var orderStatus in orderStatuses)
+                {
+                    if (@orderStatusParam == orderStatus)
+                    {
+                        <li class="list-group-item @activeText">
+                            <a style="text-decoration:none;" asp-action="Index" asp-route-orderStatus="@orderStatus">@orderStatus</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="list-group-item @primaryText">
+                            <a style="text-decoration:none;" asp-action="Index" asp-route-orderStatus="@orderStatus">@orderStatus</a>
+                        </li>
+                    }
+                }
+                <li class="list-group-item @(string.IsNullOrWhiteSpace(orderStatusParam) ? activeText : primaryText)">
+                    <a style="text-decoration:none;" asp-action="Index" asp-route-orderStatus="">All</a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <table id="orderList" class="table tabel-bordered table-striped text-center" width="100%">
+
+            <thead>
+                <tr class="text-nowrap">
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Phone Number</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td>@order.OrderHeader.Id</td>
+                        <td>@order.OrderHeader.Name</td>
+                        <td>@order.OrderHeader.Customer.PhoneNumber</td>
+                        <td>@order.OrderHeader.Customer.Email</td>
+                        <td>@order.OrderHeader.OrderStatus</td>
+                        <td>@order.OrderHeader.OrderTotal</td>
+                        <td>
+                            <a class="align-items-center" 
+                           asp-action="OrderDetails" asp-route-id="@order.OrderHeader.Id">
+                                Edit
+                                <i class="bi bi-pen-fill"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+
+</div>
+
+
+@section Scripts{
+<script type="text/javascript">
+    var table = new DataTable("#orderList",{});
+
+</script>
+}

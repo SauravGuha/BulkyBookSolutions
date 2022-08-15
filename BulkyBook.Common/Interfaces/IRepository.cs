@@ -18,6 +18,8 @@ namespace BulkyBook.Common.Interfaces
 
         IEnumerable<T> GetAll(params string[] includeProperties);
 
+        Task<List<T>> GetAllAsync(params string[] includeProperties);
+
         int Delete(T entity);
 
         int Update(T entity);
