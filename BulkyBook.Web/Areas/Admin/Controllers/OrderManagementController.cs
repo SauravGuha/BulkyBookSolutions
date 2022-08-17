@@ -9,8 +9,6 @@ using static BulkyBook.Common.Constants;
 
 namespace BulkyBook.Web.Areas.Admin.Controllers
 {
-    [Authorize(Roles = "SuperAdmin,Admin,CompanyUser")]
-
     [Area(nameof(ApplicationArea.Admin))]
     public class OrderManagementController : Controller
     {
@@ -23,6 +21,9 @@ namespace BulkyBook.Web.Areas.Admin.Controllers
             this._userManager = userManager;
         }
 
+        [Authorize(Roles = nameof(Roles.Admin) 
+            + "," + nameof(Roles.SuperAdmin) 
+            + "," + nameof(Roles.CompanyUser))]
         public async Task<IActionResult> Index(string orderStatus = "")
         {
             var orderViewModelList = new List<OrderViewModel>();
@@ -46,11 +47,49 @@ namespace BulkyBook.Web.Areas.Admin.Controllers
             return View(orderViewModelList);
         }
 
-        public async Task<IActionResult> OrderDetails(int? id)
+        public async Task<IActionResult> GetOrderDetails(int? id)
         {
-            var orderHeader = this._unitOfWork.OrderHeaderRepository.GetByExpression(e => e.Id == id, nameof(OrderHeader.OrderDetails));
+            var orderHeader = this._unitOfWork.OrderHeaderRepository.GetByExpression(e => e.Id == id, nameof(OrderHeader.Customer), nameof(OrderHeader.OrderDetails));
+            var addressDetails = this._unitOfWork.AddressRepository.Find(orderHeader.AddressId);
+            var orderDetailsViewModel = new OrderDetailsViewModel()
+            {
+                Address = addressDetails,
+                OrderHeader = orderHeader
+            };
+            return View("OrderDetails", orderDetailsViewModel);
+        }
 
-            return View();
+        [Authorize(Roles = nameof(Roles.SuperAdmin))]
+        public async Task<IActionResult> DeleteOrder(int? id)
+        {
+            if (id.GetValueOrDefault() == 0)
+            {
+                TempData["Error"] = "Invalid order id.";
+            }
+            else
+            {
+                var orderHeader = this._unitOfWork.OrderHeaderRepository.Find(id);
+                if (orderHeader == null)
+                {
+                    TempData["Error"] = $"Order id {id} not found.";
+                }
+                else
+                {
+                    //Delete the order details
+                    var orderDetails = this._unitOfWork.OrderDetailsRepository.GetAll(e => e.OrderId == id);
+                    foreach (var orderDetail in orderDetails)
+                        this._unitOfWork.OrderDetailsRepository.Delete(orderDetail);
+                    TempData["Success"] = $"Order {id} deleted successfully";
+                    this._unitOfWork.SaveChanges();
+
+                    //Delete the order header.
+                    this._unitOfWork.OrderHeaderRepository.Delete(orderHeader);
+                    this._unitOfWork.SaveChanges();
+                }
+
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         private Expression<Func<OrderHeader, bool>> GetOrderQueryExpression(string orderStatus, int? companyId)

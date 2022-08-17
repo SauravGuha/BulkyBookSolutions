@@ -1,10 +1,15 @@
-﻿@model IEnumerable<OrderViewModel>
+﻿@using static BulkyBook.Common.Constants
+@model IEnumerable<OrderViewModel>
+@inject UserManager<Customer> userManager;
+
 
 @{
     var orderStatuses = ViewBag.OrderStatus;
     var orderStatusParam = Context.Request.Query["orderStatus"];
     var primaryText = "text-primary";
     var activeText = "active text-white";
+    var user = await userManager.GetUserAsync(Context.User);
+    var isInSuperAdminRole = await userManager.IsInRoleAsync(user, Roles.SuperAdmin.ToString());
 }
 
 
@@ -66,11 +71,19 @@
                         <td>@order.OrderHeader.OrderStatus</td>
                         <td>@order.OrderHeader.OrderTotal</td>
                         <td>
-                            <a class="align-items-center" 
-                           asp-action="OrderDetails" asp-route-id="@order.OrderHeader.Id">
+                            <a class="align-items-center"
+                           asp-action="GetOrderDetails" asp-route-id="@order.OrderHeader.Id">
                                 Edit
                                 <i class="bi bi-pen-fill"></i>
                             </a>
+                            @if (isInSuperAdminRole)
+                            {
+                                <a class="align-items-center"
+                           asp-action="DeleteOrder" asp-route-id="@order.OrderHeader.Id">
+                                    Delete
+                                    <i class="bi bi-trash2-fill"></i>
+                                </a>
+                            }
                         </td>
                     </tr>
                 }

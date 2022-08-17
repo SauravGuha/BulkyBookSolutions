@@ -130,6 +130,7 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
             }
             this._unitOfWork.SaveChanges();
 
+            //Normal user
             if (user.CompanyId.GetValueOrDefault() == 0)
             {
                 var domain = _configuration.GetRequiredSection("DomainName").Value;

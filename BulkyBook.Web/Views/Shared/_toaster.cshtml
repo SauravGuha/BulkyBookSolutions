@@ -1,7 +1,9 @@
-﻿<div hidden id="toaster" class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+﻿<div hidden id="toaster" class="toast show" role="alert" 
+aria-live="assertive" aria-atomic="true">
     <div class="toast-header">
         <strong class="me-auto">Bootstrap</strong>
-        <button type="button" class="btn-close ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close">
+        <button type="button" class="btn-close ms-2 mb-1" 
+        data-bs-dismiss="toast" aria-label="Close">
             <span aria-hidden="true"></span>
         </button>
     </div>
@@ -11,6 +13,7 @@
 </div>
 
 @{
+    //mytoaster is defined in site.js
     if (@TempData["Success"] != null)
     {
         <script type="text/javascript">
