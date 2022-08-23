@@ -6,12 +6,14 @@
 
 @{
     var customer = await userManager.GetUserAsync(Context.User);
-    var isInCompany = await userManager.IsInRoleAsync(customer, Roles.CompanyUser.ToString());
-    var isAdmin = await userManager.IsInRoleAsync(customer, Roles.Admin.ToString());
-    var isSuperAdmin = await userManager.IsInRoleAsync(customer, Roles.SuperAdmin.ToString());
+    var isInCompany = customer != null ? await userManager.IsInRoleAsync(customer, Roles.CompanyUser.ToString()) : false;
+    var isAdmin = customer != null ? await userManager.IsInRoleAsync(customer, Roles.Admin.ToString()) : false;
+    var isSuperAdmin = customer != null ? await userManager.IsInRoleAsync(customer, Roles.SuperAdmin.ToString()) : false;
+    var isEnabled = isAdmin || isSuperAdmin;
 }
 
 <form method="post">
+    <input asp-for="@Model.OrderHeader.Id" type="hidden" />
     <br />
     <div class="container">
         <div class="card">
@@ -83,13 +85,13 @@
                             <div class="row my-1">
                                 <div class="col-3">Carrier</div>
                                 <div class="col-9">
-                                    <input type="text" class="form-control" asp-for="@Model.OrderHeader.Carrier" />
+                                    <input type="text" @(isEnabled?"":"readonly") class="form-control" asp-for="@Model.OrderHeader.Carrier" />
                                 </div>
                             </div>
                             <div class="row my-1">
                                 <div class="col-3">Tracking</div>
                                 <div class="col-9">
-                                    <input type="text" class="form-control" asp-for="@Model.OrderHeader.TrackingNumber" />
+                                    <input type="text" @(isEnabled?"":"readonly") class="form-control" asp-for="@Model.OrderHeader.TrackingNumber" />
                                 </div>
                             </div>
                             <div class="row my-1">
@@ -120,7 +122,7 @@
                                     <input type="text" readonly class="form-control" asp-for="@Model.OrderHeader.PaymentStatus" />
                                 </div>
                             </div>
-                            <input type="submit" class="btn btn-warning form-control my-1" value="Update Order Details" />
+                            <input type="submit" class="btn btn-warning form-control my-1" asp-action="UpdateOrderDetails" value="Update Order Details" />
 
 
                         </div>
@@ -138,11 +140,11 @@
                                             <div class="col-8">
 
                                                 @* <h6 class="my-0 text-primary">@orderItem.Product.Title</h6>*@
-                                                <small class="text-muted">Price : @orderItem.Price</small><br />
+                                                <small class="text-muted">Price : @orderItem.Price.ToString("C")</small><br />
                                                 <small class="text-muted">Quantity : @orderItem.Price</small>
                                             </div>
                                             <div class="col-4">
-                                                <p class="text-success">@(orderItem.Count * orderItem.Price)</p>
+                                                <p class="text-success">$@(orderItem.Count * orderItem.Price)</p>
                                             </div>
                                         </div>
                                     </li>
@@ -154,21 +156,30 @@
                                             <h5 class="text-white">TOTAL </h5>
                                         </div>
                                         <div class="col-6 text-right">
-                                            <h5 class="text-white">$@Model.OrderHeader.OrderTotal.ToString("C")</h5>
+                                            <h5 class="text-white">@Model.OrderHeader.OrderTotal.ToString("C")</h5>
                                         </div>
                                     </div>
                                 </li>
                             </ul>
                             @if (isAdmin || isSuperAdmin)
                             {
-                                <input type="submit" class="btn btn-primary form-control my-1" value="Start Processing" />
-                                <input type="submit" class="btn btn-primary form-control my-1" value="Ship Order" />
+                                @if(Model.OrderHeader.OrderStatus == OrderStatus.Approved.ToString())
+                                {
+                                    <input type="submit" class="btn btn-primary form-control my-1" value="Start Processing" />
+                                }
+                                @if (Model.OrderHeader.OrderStatus == OrderStatus.Processing.ToString())
+                                {
+                                    <input type="submit" class="btn btn-primary form-control my-1" value="Ship Order" />
+                                }
                             }
                             @if (isInCompany && Model.OrderHeader.PaymentStatus == PaymentStatus.approvedfordelayedpayment.ToString())
                             {
-                                <input type="submit" class="btn btn-success form-control my-1" value="Pay Now" />
+                                <input type="submit" class="btn btn-success form-control my-1" value="Pay Now" asp-action="PayNowOrder" />
                             }
-                            <input type="submit" class="btn btn-danger form-control my-1" value="Cancel Order" />
+                            @if(Model.OrderHeader.OrderStatus != OrderStatus.Cancelled.ToString() && Model.OrderHeader.OrderStatus != OrderStatus.Returned.ToString())
+                            {
+                                <input type="submit" asp-action="CancelOrder" class="btn btn-danger form-control my-1" value="Cancel Order" />
+                            }
                         </div>
                     </div>
                 </div>

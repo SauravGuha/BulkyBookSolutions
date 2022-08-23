@@ -159,9 +159,9 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
                             Quantity = cart.Count
                         };
                     }).ToList(),
-                    Mode = "payment",
-                    SuccessUrl = domain + $"/customer/cart/OrderConfirmation?id={orderHeader.Id}",
-                    CancelUrl = domain + "/customer/cart/Index",
+                    Mode = "payment",                    
+                    SuccessUrl = $"{domain}/customer/cart/OrderConfirmation?id={orderHeader.Id}",
+                    CancelUrl = $"{domain}/customer/cart/OrderCancel?id={orderHeader.Id}",
                 };
                 var service = new SessionService();
                 Session session = service.Create(options);
@@ -199,10 +199,26 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
                     this.DeleteShoppingCart(orderHeader);
                     this._unitOfWork.OrderHeaderRepository.UpdateOrderStatus(id, OrderStatus.Approved.ToString());
                     this._unitOfWork.OrderHeaderRepository.UpdateOrderPaymentStatus(id, PaymentStatus.approved.ToString());
+                    this._unitOfWork.OrderHeaderRepository.UpdateStripePaymentValues(orderHeader.Id, session.Id, session.PaymentIntentId);
                 }
                 TempData["OrderId"] = orderHeader.Id;
             }
             return View();
+        }
+
+        public IActionResult OrderCancel(int? id)
+        {
+            var orderHeader = this._unitOfWork.OrderHeaderRepository
+                .GetByExpression(e => e.Id == id, nameof(OrderHeader.OrderDetails));
+            if(orderHeader!=null)
+            {
+                foreach (var detail in orderHeader.OrderDetails)
+                    this._unitOfWork.OrderDetailsRepository.Delete(detail);
+
+                this._unitOfWork.OrderHeaderRepository.Delete(orderHeader);
+                this._unitOfWork.SaveChanges();
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         private void DeleteShoppingCart(OrderHeader orderHeader)

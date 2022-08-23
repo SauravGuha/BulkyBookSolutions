@@ -26,7 +26,8 @@
             Processing,
             Dispatched,
             Delivered,
-            Returned
+            Returned,
+            Cancelled
         }
 
         public enum PaymentStatus
@@ -34,7 +35,8 @@
             pending,
             approved,
             paid,
-            approvedfordelayedpayment
+            approvedfordelayedpayment,
+            refunded
         }
 
         public enum ApplicationArea

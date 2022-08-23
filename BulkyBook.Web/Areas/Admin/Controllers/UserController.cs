@@ -7,7 +7,6 @@ using static BulkyBook.Common.Constants;
 
 namespace BulkyBook.Web.Areas.Admin.Controllers
 {
-    [Authorize]
     [Authorize(Roles = nameof(Roles.SuperAdmin))]
     [Area("Admin")]
     public class UserController : Controller
