@@ -1,4 +1,13 @@
-﻿<!DOCTYPE html>
+﻿@using static BulkyBook.Common.Constants
+@inject UserManager<Customer> userManager;
+@{
+    var currentUser = await userManager.GetUserAsync(Context.User);
+    var userRoles = currentUser != null ? await userManager.GetRolesAsync(currentUser) : null;
+    var isAdminOrSuperAdmin = userRoles != null && (userRoles.Any(e => e == Roles.SuperAdmin.ToString())
+    || userRoles.Any(e => e == Roles.Admin.ToString()));
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -30,19 +39,29 @@
                             </a>
                         </li>
 
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                        @if (isAdminOrSuperAdmin)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
                                aria-haspopup="true" aria-expanded="false">Admin Options</a>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Category" asp-action="Index">Category</a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="CoverType" asp-action="Index">Cover Type</a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Product" asp-action="Index">Product</a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Company" asp-action="Index">Company</a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Feature" asp-action="Index">Feature</a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="User" asp-action="Index">User Management</a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Roles" asp-action="Index">Role Management</a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="OrderManagement" asp-action="Index">Order Management</a>
-                            </div>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Category" asp-action="Index">Category</a>
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="CoverType" asp-action="Index">Cover Type</a>
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Product" asp-action="Index">Product</a>
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Company" asp-action="Index">Company</a>
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Feature" asp-action="Index">Feature</a>
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="User" asp-action="Index">User Management</a>
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Roles" asp-action="Index">Role Management</a>
+                                </div>
+                            </li>
+                        }
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="Admin" asp-controller="OrderManagement"
+                               asp-action="Index">
+                                Order Management
+                                <span class="visually-hidden">(current)</span>
+                            </a>
                         </li>
 
                         <li class="nav-item align-content-end">
