@@ -2,6 +2,8 @@
 {
     public class Constants
     {
+        public const string CartCount = "CartCount";
+
         public enum Roles
         {
             #region App internal user roles

@@ -13,9 +13,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+
 builder.Services.AddDbContext<BulkyBookDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 
 builder.Services.AddIdentity<models.Customer, IdentityRole>(options =>
@@ -36,12 +39,21 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
 
     options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.SlidingExpiration = true;
 });
 
-builder.Services.AddScoped<IEmailSender, BulkyBookEmailSender>();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(10);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
+
+builder.Services.AddScoped<IEmailSender, BulkyBookEmailSender>();
 builder.Services.AddScoped<IUnitOfWork, BulkyBookUnitOfWork>();
 builder.Services.AddScoped<IDbInitializer, BulkDbInitializer>();
 
@@ -73,6 +85,7 @@ StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe").GetValue
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 app.MapRazorPages();
 app.MapControllerRoute(
     name: "default",

@@ -1,4 +1,5 @@
-﻿using BulkyBook.Common.Interfaces;
+﻿using BulkyBook.Common;
+using BulkyBook.Common.Interfaces;
 using BulkyBook.Common.Models;
 using BulkyBook.Web.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -41,6 +42,9 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
             {
                 this._unitOfWork.ShoppingCartRepository.Delete(shoppingCart);
                 this._unitOfWork.SaveChanges();
+                var cartCount = HttpContext.Session.GetInt32(CartCount).GetValueOrDefault();
+                if (cartCount > 0)
+                    HttpContext.Session.SetInt32(CartCount, --cartCount);
             }
             return RedirectToAction(nameof(Index));
         }
@@ -159,7 +163,7 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
                             Quantity = cart.Count
                         };
                     }).ToList(),
-                    Mode = "payment",                    
+                    Mode = "payment",
                     SuccessUrl = $"{domain}/customer/cart/OrderConfirmation?id={orderHeader.Id}",
                     CancelUrl = $"{domain}/customer/cart/OrderCancel?id={orderHeader.Id}",
                 };
@@ -210,7 +214,7 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
         {
             var orderHeader = this._unitOfWork.OrderHeaderRepository
                 .GetByExpression(e => e.Id == id, nameof(OrderHeader.OrderDetails));
-            if(orderHeader!=null)
+            if (orderHeader != null)
             {
                 foreach (var detail in orderHeader.OrderDetails)
                     this._unitOfWork.OrderDetailsRepository.Delete(detail);
@@ -227,6 +231,8 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
             foreach (var shoppingCartItem in shoppingCartItems)
                 this._unitOfWork.ShoppingCartRepository.Delete(shoppingCartItem);
             this._unitOfWork.SaveChanges();
+            HttpContext.Session.SetInt32(CartCount, 0);
+
         }
 
         private double GetCartPrice(int quantity, double price, double price50, double price100)

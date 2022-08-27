@@ -41,7 +41,8 @@
                                         <a class="btn btn-primary" asp-action="AddQuantityToCart" asp-route-id="@Model.ShoppingCarts[i].Id">
                                             <i class="bi bi-plus-square"></i>
                                         </a> &nbsp;
-                                        <a class="btn btn-warning" asp-action="DeductQuantityFromCart" asp-route-id="@Model.ShoppingCarts[i].Id">
+                                        <a class="btn btn-warning" asp-action="DeductQuantityFromCart"
+                                   asp-route-id="@Model.ShoppingCarts[i].Id">
                                             <i class="bi bi-dash-square"></i>
                                         </a>
                                     </div>
@@ -90,26 +91,25 @@
 </form>
 
 @section Scripts{
-<script type="text/javascript">
+    <script type="text/javascript">
+        var delBtns = document.getElementsByClassName('btn-danger');
 
-    var delBtns = document.getElementsByClassName('btn-danger');
-
-    for(var i =0;i < delBtns.length;i++){
-        var delBtn = delBtns[i];
-        delBtn.addEventListener('click',(e)=>{
-            e.preventDefault();
-            swal({
-                    icon:"warning",
-                    title:"Delete Product from Cart.",
-                    text:"This will remove the product from the cart!",
-                    buttons:true
-                }).then(e=>{
-                    if(e){
-                        location.href = deleteAnchor.href;
+        for (var i = 0; i < delBtns.length; i++) {
+            var delBtn = delBtns[i];
+            delBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                swal({
+                    icon: "warning",
+                    title: "Delete Product from Cart.",
+                    text: "This will remove the product from the cart!",
+                    buttons: true
+                }).then(e => {
+                    if (e) {
+                        location.href = delBtn.href;
                     }
                 });
-        });
-    }
+            });
+        }
 
-</script>
+    </script>
 }

@@ -4,6 +4,7 @@ using BulkyBook.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
 using System.Diagnostics;
 
 namespace BulkyBook.Web.Controllers
@@ -62,6 +63,11 @@ nameof(Product.Category), nameof(Product.CoverType));
             return View(detailsViewModel);
         }
 
+        /// <summary>
+        /// Add button of product details page.
+        /// </summary>
+        /// <param name="detailsViewModel"></param>
+        /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -85,6 +91,7 @@ nameof(Product.Category), nameof(Product.CoverType));
                 else
                     this._unitOfWork.ShoppingCartRepository.Insert(shoppingCartModel);
                 this._unitOfWork.SaveChanges();
+                AddCartToSession(user);
             }
             return RedirectToAction(nameof(Index));
         }
@@ -94,5 +101,15 @@ nameof(Product.Category), nameof(Product.CoverType));
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        private void AddCartToSession(Customer user)
+        {
+            if(user!=null)
+            {
+                var carts = this._unitOfWork.ShoppingCartRepository.GetAll(e => e.UserId == user.Id);
+                HttpContext.Session.SetInt32(BulkyBook.Common.Constants.CartCount, carts.Count());
+            }
+        }
+
     }
 }

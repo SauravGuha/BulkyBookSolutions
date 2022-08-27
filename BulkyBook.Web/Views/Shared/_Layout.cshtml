@@ -1,10 +1,14 @@
-﻿@using static BulkyBook.Common.Constants
+﻿@using BulkyBook.Common
+@using static BulkyBook.Common.Constants
+@using Microsoft.AspNetCore.Http
+
 @inject UserManager<Customer> userManager;
 @{
     var currentUser = await userManager.GetUserAsync(Context.User);
     var userRoles = currentUser != null ? await userManager.GetRolesAsync(currentUser) : null;
     var isAdminOrSuperAdmin = userRoles != null && (userRoles.Any(e => e == Roles.SuperAdmin.ToString())
     || userRoles.Any(e => e == Roles.Admin.ToString()));
+    var cartCount = Context.Session.GetInt32(Constants.CartCount);
 }
 
 <!DOCTYPE html>
@@ -66,7 +70,13 @@
 
                         <li class="nav-item align-content-end">
                             <a class="nav-link text-dark" asp-area="Customer" asp-controller="Cart" asp-action="Index">
-                                Cart <i class="bi bi-cart"></i>
+                                Cart
+                                @if (cartCount.GetValueOrDefault() > 0)
+                                {
+                                    <i class="bi bi-cart">
+                                        @cartCount
+                                    </i>
+                                }
                                 <span class="visually-hidden">(current)</span>
                             </a>
                         </li>
