@@ -20,6 +20,12 @@ builder.Services.AddDbContext<BulkyBookDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+builder.Services.Configure<FacebookSettings>(builder.Configuration.GetSection("Facebook"));
+builder.Services.AddAuthentication().AddFacebook(options =>
+{
+    options.AppId = builder.Configuration.GetSection("Facebook").GetValue<string>("AppKey");
+    options.AppSecret = builder.Configuration.GetSection("Facebook").GetValue<string>("AppSecret");
+});
 
 builder.Services.AddIdentity<models.Customer, IdentityRole>(options =>
  {

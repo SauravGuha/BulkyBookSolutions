@@ -8,7 +8,6 @@
     var userRoles = currentUser != null ? await userManager.GetRolesAsync(currentUser) : null;
     var isAdminOrSuperAdmin = userRoles != null && (userRoles.Any(e => e == Roles.SuperAdmin.ToString())
     || userRoles.Any(e => e == Roles.Admin.ToString()));
-    var cartCount = Context.Session.GetInt32(Constants.CartCount);
 }
 
 <!DOCTYPE html>
@@ -71,13 +70,7 @@
                         <li class="nav-item align-content-end">
                             <a class="nav-link text-dark" asp-area="Customer" asp-controller="Cart" asp-action="Index">
                                 Cart
-                                @if (cartCount.GetValueOrDefault() > 0)
-                                {
-                                    <i class="bi bi-cart">
-                                        @cartCount
-                                    </i>
-                                }
-                                <span class="visually-hidden">(current)</span>
+                                @await Component.InvokeAsync("ShoppingCart")
                             </a>
                         </li>
 

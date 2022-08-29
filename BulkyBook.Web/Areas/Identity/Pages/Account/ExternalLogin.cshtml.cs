@@ -17,25 +17,32 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using appModels = BulkyBook.Common.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using BulkyBook.Common.Interfaces;
+using BulkyBook.Common.Models;
 
 namespace BulkyBook.Web.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
     public class ExternalLoginModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly IUserStore<IdentityUser> _userStore;
-        private readonly IUserEmailStore<IdentityUser> _emailStore;
+        private readonly SignInManager<appModels.Customer> _signInManager;
+        private readonly UserManager<appModels.Customer> _userManager;
+        private readonly IUserStore<appModels.Customer> _userStore;
+        private readonly IUserEmailStore<appModels.Customer> _emailStore;
         private readonly IEmailSender _emailSender;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
-            SignInManager<IdentityUser> signInManager,
-            UserManager<IdentityUser> userManager,
-            IUserStore<IdentityUser> userStore,
+            SignInManager<appModels.Customer> signInManager,
+            UserManager<appModels.Customer> userManager,
+            IUserStore<appModels.Customer> userStore,
             ILogger<ExternalLoginModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IUnitOfWork unitOfWork)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -43,6 +50,7 @@ namespace BulkyBook.Web.Areas.Identity.Pages.Account
             _emailStore = GetEmailStore();
             _logger = logger;
             _emailSender = emailSender;
+            this._unitOfWork = unitOfWork;
         }
 
         /// <summary>
@@ -84,6 +92,46 @@ namespace BulkyBook.Web.Areas.Identity.Pages.Account
             [Required]
             [EmailAddress]
             public string Email { get; set; }
+
+            [Required]
+            public string Name { get; set; }
+
+            [Required]
+            public int Age { get; set; }
+
+            [Required]
+            public string PhoneNumber { get; set; }
+
+            [Required]
+            public string AddressLine1 { get; set; }
+
+
+            public string AddressLine2 { get; set; }
+
+
+            public string LandMark { get; set; }
+
+            [Required]
+            public string City { get; set; }
+
+            [Required]
+            public string State { get; set; }
+
+            public string AddressPhoneNumber { get; set; }
+
+            [Required]
+            public string Country { get; set; }
+
+            [Required]
+            public string PostCode { get; set; }
+
+            /// <summary>
+            /// This is optional for an user
+            /// </summary>
+            [ValidateNever]
+            public string CompanyId { get; set; }
+
+            public IEnumerable<SelectListItem> Companies { get; set; }
         }
         
         public IActionResult OnGet() => RedirectToPage("./Login");
@@ -129,10 +177,16 @@ namespace BulkyBook.Web.Areas.Identity.Pages.Account
                 ProviderDisplayName = info.ProviderDisplayName;
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
                 {
+                    var companies = this._unitOfWork.CompanyRepository.GetAll();
                     Input = new InputModel
                     {
                         Email = info.Principal.FindFirstValue(ClaimTypes.Email)
                     };
+                    this.Input.Companies = companies.Select(e => new SelectListItem()
+                    {
+                        Value = e.Id.ToString(),
+                        Text = e.Name,
+                    });
                 }
                 return Page();
             }
@@ -152,6 +206,26 @@ namespace BulkyBook.Web.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
+                user.Name = Input.Name;
+                user.Age = Input.Age;
+                user.PhoneNumber = Input.PhoneNumber;
+                var companyId = 0;
+                if (int.TryParse(Input.CompanyId, out companyId))
+                    user.CompanyId = companyId;
+                user.Addresses = new List<Address>()
+                {
+                    new Address()
+                    {
+                        City = Input.City,
+                        AddressLine1 = Input.AddressLine1,
+                        AddressLine2 = Input.AddressLine2,
+                        Country = Input.Country,
+                        LandMark = Input.LandMark,
+                        PhoneNumber = Input.AddressPhoneNumber,
+                        PostCode = Input.PostCode,
+                         State = Input.State,
+                    }
+                };
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
@@ -197,11 +271,11 @@ namespace BulkyBook.Web.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private IdentityUser CreateUser()
+        private appModels.Customer CreateUser()
         {
             try
             {
-                return Activator.CreateInstance<IdentityUser>();
+                return Activator.CreateInstance<appModels.Customer>();
             }
             catch
             {
@@ -211,13 +285,13 @@ namespace BulkyBook.Web.Areas.Identity.Pages.Account
             }
         }
 
-        private IUserEmailStore<IdentityUser> GetEmailStore()
+        private IUserEmailStore<appModels.Customer> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
             {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
-            return (IUserEmailStore<IdentityUser>)_userStore;
+            return (IUserEmailStore<appModels.Customer>)_userStore;
         }
     }
 }
