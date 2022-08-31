@@ -137,7 +137,7 @@ namespace BulkyBook.Web.Areas.Customer.Controllers
             //Normal user
             if (user.CompanyId.GetValueOrDefault() == 0)
             {
-                var domain = _configuration.GetRequiredSection("DomainName").Value;
+                var domain = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
                 var options = new SessionCreateOptions
                 {
                     PaymentMethodTypes = new List<string>
