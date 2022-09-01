@@ -17,14 +17,14 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
 builder.Services.AddDbContext<BulkyBookDbContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+options.UseSqlServer(builder.Configuration["ConnectionStrings:Default"]));
 
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 builder.Services.Configure<FacebookSettings>(builder.Configuration.GetSection("Facebook"));
 builder.Services.AddAuthentication().AddFacebook(options =>
 {
-    options.AppId = builder.Configuration.GetSection("Facebook").GetValue<string>("AppKey");
-    options.AppSecret = builder.Configuration.GetSection("Facebook").GetValue<string>("AppSecret");
+    options.AppId = builder.Configuration["Facebook:AppKey"];
+    options.AppSecret = builder.Configuration["Facebook:AppSecret"];
 });
 
 builder.Services.AddIdentity<models.Customer, IdentityRole>(options =>
@@ -87,7 +87,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 await SeedDatabase();
-StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe").GetValue<string>("SecretKey");
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 app.UseAuthentication();
 app.UseAuthorization();
