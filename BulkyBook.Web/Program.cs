@@ -1,4 +1,6 @@
 
+#define Managed
+
 using BulkyBook.Common.Interfaces;
 using BulkyBook.EntityFrameWorkDb;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +10,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using BulkyBook.Web.Utility;
 using BulkyBook.Common.Common;
 using Stripe;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,13 +61,19 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+if (builder.Environment.IsProduction())
+{
+    builder.Configuration.AddAzureKeyVault(
+        new Uri($"https://{builder.Configuration["KeyVaultName"]}.vault.azure.net/"),
+        new DefaultAzureCredential());
+}
+
 
 builder.Services.AddScoped<IEmailSender, BulkyBookEmailSender>();
 builder.Services.AddScoped<IUnitOfWork, BulkyBookUnitOfWork>();
 builder.Services.AddScoped<IDbInitializer, BulkDbInitializer>();
 
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
